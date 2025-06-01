@@ -12,7 +12,8 @@ class SettingController extends Controller
      */
     public function index()
     {
-        //
+        $settings = Setting::latest()->paginate(10);
+        return view('settings.index', compact('settings'));
     }
 
     /**
