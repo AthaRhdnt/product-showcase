@@ -1,26 +1,20 @@
 <?php
-
 namespace App\Models;
 
-use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Product extends Model implements HasMedia
+class Product extends Model
 {
-    use InteractsWithMedia;
-
-    protected $table = 'products';
+    protected $table      = 'products';
     protected $primaryKey = 'id';
-    
+
     protected $fillable = [
-        'name', 
-        'slug', 
-        'description', 
-        'price', 
-        'category_id', 
-        'thumbnail',
+        'name',
+        'slug',
+        'description',
+        'price',
+        'category_id',
+        // 'thumbnail',
     ];
 
     public function category()
@@ -40,10 +34,13 @@ class Product extends Model implements HasMedia
         return $this->hasMany(ProductAttribute::class);
     }
 
-    public function registerMediaConversions(Media $media = null): void {
-        $this->addMediaConversion('thumb')
-            ->width(100)
-            ->height(100)
-            ->sharpen(10);
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    public function thumbnail()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_thumbnail', true);
     }
 }

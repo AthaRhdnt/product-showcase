@@ -9,7 +9,7 @@
         <form method="POST" action="{{ route('admin.categories.store') }}">
             @csrf
 
-            <div class="mb-4">
+            {{-- <div class="mb-4">
                 <x-input-label for="name" :value="__('Name')" />
                 <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" value="{{ old('name') }}" required autofocus />
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
@@ -19,6 +19,11 @@
                 <a href="{{ route('admin.categories.index') }}">
                     <x-secondary-button>Cancel</x-secondary-button>
                 </a>
+                <x-primary-button type="submit">Save</x-primary-button>
+            </div> --}}
+            <x-form.input-group label="Name" name="name" required />
+            <div class="flex justify-end gap-2">
+                <a href="{{ route('admin.categories.index') }}"><x-secondary-button>Cancel</x-secondary-button></a>
                 <x-primary-button type="submit">Save</x-primary-button>
             </div>
         </form>

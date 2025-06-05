@@ -1,11 +1,15 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PublicController;
+use App\Http\Controllers\ProfileController;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('public');
+Route::get('/', [PublicController::class, 'index'])->name('public.index');
+
+Route::get('/compare', [PublicController::class, 'compare'])->name('public.compare');
+// Route::post('/compare/{product}', [PublicController::class, 'toggleCompare'])->name('public.compare.add');
+Route::post('/compare/toggle/{id}', [PublicController::class, 'toggleCompare'])->name('public.compare.toggle');
+Route::get('/product/{product}', [PublicController::class, 'show'])->name('public.show');
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
