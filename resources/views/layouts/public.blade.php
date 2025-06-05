@@ -20,10 +20,19 @@ $watch('darkMode', value => localStorage.setItem('theme', value ? 'dark' : 'ligh
         <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet">
 
         <!-- Styles -->
-        @vite('resources/css/app.css')
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <!-- Alpine.js -->
         <script src="//unpkg.com/alpinejs" defer></script>
+
+        <script>
+            if (localStorage.theme === 'dark' ||
+                (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
 
         <!-- Alpine store for compare count -->
         <script>
@@ -71,9 +80,7 @@ $watch('darkMode', value => localStorage.setItem('theme', value ? 'dark' : 'ligh
         </style>
     </head>
 
-    <body x-data="{ sidebarOpen: false, darkMode: localStorage.getItem('theme') === 'dark' }" x-init="document.documentElement.classList.toggle('dark', darkMode);
-    $watch('darkMode', value => localStorage.setItem('theme', value ? 'dark' : 'light'))"
-        class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-inter antialiased min-h-screen flex flex-col">
+    <body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-inter antialiased min-h-screen flex flex-col">
         <!-- Header -->
         <header
             class="sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-700">
