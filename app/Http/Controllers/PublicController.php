@@ -46,7 +46,7 @@ class PublicController extends Controller
                 break;
         }
 
-        $products   = $query->paginate(9)->withQueryString();
+        $products   = $query->paginate(5)->withQueryString();
         $categories = Category::all();
 
         return view('public.index', compact('products', 'categories'));
@@ -72,46 +72,6 @@ class PublicController extends Controller
         return view('public.compare', compact('compareProducts', 'allAttributes'));
     }
 
-    // public function toggleCompare(Request $request, $id)
-    // {
-    //     $compare = session()->get('compare', []);
-
-    //     if (in_array($id, $compare)) {
-    //         // Remove from compare
-    //         $compare = array_filter($compare, fn($pid) => $pid != $id);
-    //         session()->put('compare', array_values($compare));
-    //         return redirect()->back()->with('success', 'Product removed from comparison list.');
-    //     } else {
-    //         // Add to compare
-    //         $compare[] = $id;
-    //         session()->put('compare', array_unique($compare));
-    //         return redirect()->back()->with('success', 'Product added to comparison list.');
-    //     }
-    // }
-    // public function toggleCompare(Request $request, $id)
-    // {
-    //     $compare = session()->get('compare', []);
-
-    //     if (in_array($id, $compare)) {
-    //         $compare = array_filter($compare, fn($pid) => $pid != $id);
-    //         session()->put('compare', array_values($compare));
-
-    //         if ($request->expectsJson()) {
-    //             return response()->json(['status' => 'removed']);
-    //         }
-
-    //         return redirect()->back()->with('success', 'Product removed from comparison list.');
-    //     } else {
-    //         $compare[] = $id;
-    //         session()->put('compare', array_unique($compare));
-
-    //         if ($request->expectsJson()) {
-    //             return response()->json(['status' => 'added']);
-    //         }
-
-    //         return redirect()->back()->with('success', 'Product added to comparison list.');
-    //     }
-    // }
     public function toggleCompare(Request $request, $id)
     {
         $compare = session()->get('compare', []);
@@ -135,6 +95,17 @@ class PublicController extends Controller
 
             return redirect()->back()->with('success', 'Product added to comparison list.');
         }
+    }
+
+    public function compareClear(Request $request)
+    {
+        session()->forget('compare');
+
+        if ($request->expectsJson()) {
+            return response()->json(['status' => 'cleared']);
+        }
+
+        return redirect()->back()->with('success', 'Comparison list cleared.');
     }
 
     public function show(Product $product)

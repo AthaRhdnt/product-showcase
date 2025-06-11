@@ -28,7 +28,7 @@ class ProductController extends Controller
         $query->orderBy($sort, $direction);
 
         // Entries per page
-        $perPage = $request->input('entries', 10);
+        $perPage = $request->input('entries', 5);
 
         $products = $query->paginate($perPage)->appends($request->all());
 
@@ -49,99 +49,6 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'name'         => 'required',
-    //         'price'        => 'required|numeric',
-    //         'category_id'  => 'required|exists:categories,id',
-    //         'image'        => 'nullable|image',
-    //         'attributes'   => 'nullable|array',
-    //         'attributes.*' => 'nullable|string',
-    //     ]);
-
-    //     $cleanPrice = (int) str_replace('.', '', $request->price);
-
-    //     $product = Product::create([
-    //         'name'        => $request->name,
-    //         'slug'        => Str::slug($request->name),
-    //         'description' => $request->description,
-    //         'price'       => $cleanPrice,
-    //         'category_id' => $request->category_id,
-    //     ]);
-
-    //     // Image upload with Spatie
-    //     if ($request->hasFile('image')) {
-    //         $product->addMediaFromRequest('image')->toMediaCollection('products');
-    //     }
-
-    //     // Attributes
-    //     if ($request->has('attributes')) {
-    //         foreach ($request->input('attributes') as $attribute_id) {
-    //             $value = $request->input("attribute_values.$attribute_id");
-
-    //             if ($value) {
-    //                 $product->productAttributes()->create([
-    //                     'attribute_id' => $attribute_id,
-    //                     'value'        => $value,
-    //                 ]);
-    //             }
-    //         }
-    //     }
-
-    //     return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
-    // }
-    // public function store(Request $request)
-    // {
-    //     $data = $request->validate([
-    //         'name'            => 'required|string|max:255',
-    //         'slug'            => 'required|string|unique:products,slug',
-    //         'description'     => 'nullable|string',
-    //         'price'           => 'required',
-    //         'category_id'     => 'required|exists:categories,id',
-    //         'images.*'        => 'image|max:2048',
-    //         'thumbnail_index' => 'nullable|integer',
-    //     ]);
-
-    //     $cleanPrice = (int) str_replace('.', '', $request->price);
-
-    //     $product = Product::create([
-    //         'name'        => $request->name,
-    //         'slug'        => Str::slug($request->name),
-    //         'description' => $request->description,
-    //         'price'       => $cleanPrice,
-    //         'category_id' => $request->category_id,
-    //     ]);
-
-    //     // Sync attributes
-    //     if ($request->filled('attributes')) {
-    //         foreach ($request->attributes as $attributeId) {
-    //             $product->attributes()->attach($attributeId, [
-    //                 'value' => $request->attribute_values[$attributeId] ?? null,
-    //             ]);
-    //         }
-    //     }
-
-    //     // Handle images
-    //     if ($request->hasFile('images')) {
-    //         foreach ($request->file('images') as $index => $image) {
-    //             $filename = time() . '_' . $image->getClientOriginalName();
-    //             $path     = $image->storeAs('uploads/products', $filename, 'public');
-
-    //             ProductImage::create([
-    //                 'product_id'   => $product->id,
-    //                 'filename'     => $path,
-    //                 'is_thumbnail' => $index == $request->input('thumbnail_index'),
-    //             ]);
-
-    //             if ($index == $request->input('thumbnail_index')) {
-    //                 $product->update(['thumbnail' => $path]);
-    //             }
-    //         }
-    //     }
-
-    //     return redirect()->route('admin.products.index')->with('success', 'Product created successfully!');
-    // }
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -164,7 +71,7 @@ class ProductController extends Controller
         // Store product
         $product = Product::create([
             'name'        => $validated['name'],
-            'slug'        => Str::slug($validated['name']),
+            'slug'        => $this->generateUniqueSlug($validated['name']),
             'price'       => $validated['price'],
             'description' => $validated['description'] ?? null,
             'category_id' => $validated['category_id'],
@@ -181,9 +88,7 @@ class ProductController extends Controller
 
         // Store images
         if ($request->hasFile('images')) {
-            \Log::info('Images detected in request');
             foreach ($request->file('images') as $index => $image) {
-                \Log::info("Image $index original name: " . $image->getClientOriginalName());
                 $filename = uniqid() . '.' . $image->getClientOriginalExtension();
 
                 // Save to storage/app/public/products
@@ -240,20 +145,6 @@ class ProductController extends Controller
 
         $validated['price'] = (int) str_replace('.', '', $validated['price']);
 
-        // Check if name has changed
-        $nameChanged = $product->name !== $request->name;
-
-        // If changed, generate a new slug and validate it
-        if ($nameChanged) {
-            $slug = Str::slug($request->name);
-
-            $request->validate([
-                'slug' => ['unique:products,slug,' . $product->id],
-            ]);
-
-            $validated['slug'] = $slug;
-        }
-
         $updateData = [
             'name'        => $validated['name'],
             'price'       => $validated['price'],
@@ -261,18 +152,12 @@ class ProductController extends Controller
             'category_id' => $validated['category_id'],
         ];
 
-        if ($nameChanged) {
-            $updateData['slug'] = $validated['slug'];
+        // Only update slug if name has changed
+        if ($product->name !== $validated['name']) {
+            $slug               = $this->generateUniqueSlug($validated['name'], $product->id); // pass ID to exclude current product
+            $updateData['slug'] = $slug;
         }
 
-        // Update product
-        // $product->update([
-        //     'name'        => $validated['name'],
-        //     'slug'        => Str::slug($request->name),
-        //     'price'       => $validated['price'],
-        //     'description' => $validated['description'] ?? null,
-        //     'category_id' => $validated['category_id'],
-        // ]);
         $product->update($updateData);
 
         // Sync attributes
@@ -283,28 +168,6 @@ class ProductController extends Controller
 
             $product->attributes()->sync($attributes);
         }
-
-        // // Handle new uploaded images
-        // $uploadedImages = $request->file('images', []);
-        // $thumbnailIndex = (int) $request->input('thumbnail_index');
-
-        // foreach ($uploadedImages as $index => $imageFile) {
-        //     $path        = $imageFile->store('products', 'public');
-        //     $isThumbnail = $index === $thumbnailIndex;
-
-        //     $product->images()->create([
-        //         'path'         => $path,
-        //         'is_thumbnail' => $isThumbnail,
-        //     ]);
-        // }
-
-        // // If thumbnail is from existing images
-        // if ($request->filled('existing_thumbnail_id')) {
-        //     $product->images()->update(['is_thumbnail' => false]);
-        //     $product->images()
-        //         ->where('id', $request->input('existing_thumbnail_id'))
-        //         ->update(['is_thumbnail' => true]);
-        // }
 
         return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
     }
@@ -317,4 +180,22 @@ class ProductController extends Controller
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }
+
+    /**
+     * Generate a unique slug by appending -2, -3, etc. if needed.
+     */
+    private function generateUniqueSlug(string $name): string
+    {
+        $baseSlug = Str::slug($name);
+        $slug     = $baseSlug;
+        $counter  = 2;
+
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
 }

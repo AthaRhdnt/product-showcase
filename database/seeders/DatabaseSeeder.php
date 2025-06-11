@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AdminSeeder::class,
-            // SmartphoneSeeder::class,
+            SmartphoneSeeder::class,
         ]);
     }
 }

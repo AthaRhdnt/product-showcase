@@ -2,9 +2,7 @@
 
 @section('content')
     <div class="max-w-4xl mx-auto px-4">
-        <a href="{{ url()->previous() }}" class="text-indigo-600 hover:underline mb-6 inline-block">
-            ← Back to Products
-        </a>
+        <x-back-button/>
 
         <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
             {{-- Image Gallery --}}
@@ -33,9 +31,7 @@
 
             {{-- Product Info --}}
             <div class="p-6 border-t border-gray-200 dark:border-gray-700">
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                    {{ $product->name }}
-                </h1>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $product->name }}</h1>
                 <p class="text-xl text-gray-700 dark:text-gray-300 mt-2">
                     Rp. {{ number_format($product->price) }}
                 </p>
@@ -43,7 +39,6 @@
                     Category: {{ $product->category->name }}
                 </p>
 
-                {{-- Attributes --}}
                 @if ($product->attributes->isNotEmpty())
                     <div class="mt-6">
                         <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Attributes</h2>
@@ -58,5 +53,3 @@
         </div>
     </div>
 @endsection
-
-

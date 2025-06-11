@@ -15,15 +15,17 @@ $watch('darkMode', value => localStorage.setItem('theme', value ? 'dark' : 'ligh
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{{ config('app.name', 'Product Showcase Catalog') }}</title>
 
-        <!-- Fonts -->
+        <!-- Fonts & Styles -->
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
         <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet">
-
-        <!-- Styles -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-        <!-- Alpine.js -->
+        <!-- Alpine.js + Collapse plugin -->
         <script src="//unpkg.com/alpinejs" defer></script>
+        <script src="//unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js" defer></script>
+
+        <!-- Lightbox2 -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 
         <script>
             if (localStorage.theme === 'dark' ||
@@ -51,10 +53,59 @@ $watch('darkMode', value => localStorage.setItem('theme', value ? 'dark' : 'ligh
                 });
             });
         </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 
+        <script>
+            function priceFilter() {
+                return {
+                    min: {{ request()->has('price_min') ? (int) request('price_min') : 'null' }},
+                    max: {{ request()->has('price_max') ? (int) request('price_max') : 'null' }},
+
+                    init() {
+                        this.adjustMax();
+                        this.adjustMin();
+                    },
+
+                    formatNumber(value) {
+                        if (value === null || value === '') return '';
+                        return new Intl.NumberFormat().format(value);
+                    },
+
+                    parseNumber(value) {
+                        const cleaned = value.toString().replace(/[^\d]/g, '');
+                        return cleaned ? Number(cleaned) : null;
+                    },
+
+                    updateMin(value) {
+                        this.min = this.parseNumber(value);
+                        this.adjustMax();
+                    },
+
+                    updateMax(value) {
+                        this.max = this.parseNumber(value);
+                        this.adjustMin();
+                    },
+
+                    adjustMax() {
+                        if (this.min !== null && (this.max === null || this.max < this.min)) {
+                            this.max = this.min;
+                        }
+                    },
+
+                    adjustMin() {
+                        if (this.max !== null && this.min !== null && this.min > this.max) {
+                            this.min = this.max;
+                        }
+                    }
+                }
+            }
+        </script>
 
         <style>
+            /* Ensure all tappable elements have comfortable hit areas */
+            button, a, .nav-link {
+                @apply p-2;
+            }
+            
             /* Nav link underline effect */
             .nav-link {
                 position: relative;
@@ -80,11 +131,12 @@ $watch('darkMode', value => localStorage.setItem('theme', value ? 'dark' : 'ligh
         </style>
     </head>
 
-    <body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-inter antialiased min-h-screen flex flex-col">
+    <body :class="{ 'overflow-hidden': sidebarOpen }"
+        class="bg-white dark:bg-gray-900 text-base leading-relaxed text-gray-800 dark:text-gray-100 font-inter antialiased min-h-screen flex flex-col">
         <!-- Header -->
         <header
             class="sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-700">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex flex-wrap items-center justify-between">
                 <!-- Mobile sidebar toggle -->
                 <button
                     class="lg:hidden text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
@@ -155,9 +207,9 @@ $watch('darkMode', value => localStorage.setItem('theme', value ? 'dark' : 'ligh
         </header>
 
         <!-- Sidebar (Mobile Overlay) -->
-        <div class="lg:hidden fixed inset-0 z-40" x-show="sidebarOpen" x-transition>
+        <div class="lg:hidden fixed inset-0 z-40 overflow-hidden" x-show="sidebarOpen" x-transition>
             <div class="absolute inset-0 bg-black bg-opacity-50" @click="sidebarOpen = false" aria-hidden="true"></div>
-            <aside class="absolute left-0 top-0 w-64 h-full bg-white dark:bg-gray-800 p-4 overflow-y-auto z-50"
+            <aside class="absolute top-16 left-0 h-[calc(100%-4rem)] w-3/4 bg-white dark:bg-gray-800 p-4 overflow-y-auto z-50"
                 tabindex="-1" aria-label="Filters Sidebar">
                 @include('public.partials.filters')
             </aside>
@@ -171,7 +223,7 @@ $watch('darkMode', value => localStorage.setItem('theme', value ? 'dark' : 'ligh
             </aside>
 
             <!-- Page Content -->
-            <main class="w-full lg:w-3/4">
+            <main class="w-full lg:w-3/4 space-y-6">
                 @yield('content')
             </main>
         </div>

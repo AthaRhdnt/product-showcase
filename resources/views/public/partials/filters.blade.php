@@ -22,14 +22,38 @@
     </div>
 
     <!-- Price Range Filter -->
-    <div>
-        <label for="price_min" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price
-            Range</label>
+    <div x-data="priceFilter()" x-init="init()">
+        <label for="price_min" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price Range</label>
         <div class="flex space-x-2 mt-1">
-            <input type="number" name="price_min" id="price_min" placeholder="Min" value="{{ request('price_min') }}"
-                class="w-1/2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-            <input type="number" name="price_max" id="price_max" placeholder="Max" value="{{ request('price_max') }}"
-                class="w-1/2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <!-- Visible & formatted MIN input -->
+            <input
+                type="text"
+                placeholder="Min"
+                inputmode="numeric"
+                :value="formatNumber(min)"
+                @input="updateMin($event.target.value)"
+                @blur="$event.target.value = formatNumber(min)"
+                @focus="$event.target.value = min ?? ''"
+                class="w-1/2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            >
+
+            <!-- Hidden input that is actually submitted -->
+            <input type="hidden" name="price_min" :value="min">
+
+            <!-- Visible & formatted MAX input -->
+            <input
+                type="text"
+                placeholder="Max"
+                inputmode="numeric"
+                :value="formatNumber(max)"
+                @input="updateMax($event.target.value)"
+                @blur="$event.target.value = formatNumber(max)"
+                @focus="$event.target.value = max ?? ''"
+                class="w-1/2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            >
+
+            <!-- Hidden input that is actually submitted -->
+            <input type="hidden" name="price_max" :value="max">
         </div>
     </div>
 

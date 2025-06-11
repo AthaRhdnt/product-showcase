@@ -9,10 +9,23 @@
             <!-- Header with Compare Button -->
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">Products</h2>
-                <a href="{{ route('public.compare') }}"
-                    class="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition">
-                    <span x-text="'View Compare (' + $store.compare.count + ')'"></span>
-                </a>
+                <div class="flex items-center gap-4">
+                    <!-- Clear Button -->
+                    <a href="{{ route('public.clear') }}" title="Clear Comparison List"
+                        class="text-gray-800 dark:text-white hover:text-red-600 transition">
+                        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
+                        </svg>
+                    </a>
+
+                    <!-- View Compare Button -->
+                    <a href="{{ route('public.compare') }}"
+                        class="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition">
+                        <span x-text="'View Compare (' + $store.compare.count + ')'">View Compare</span>
+                    </a>
+                </div>
             </div>
 
             <!-- Products Grid -->
@@ -20,19 +33,22 @@
                 @forelse($products as $product)
                     <div
                         class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden flex flex-col">
-                        {{-- <img src="{{ $product->getFirstMediaUrl('images', 'thumb') ?? 'https://via.placeholder.com/300x200' }}"
-                            alt="{{ $product->name }}" class="w-full h-48 object-cover"> --}}
                         @php
                             $thumbnail = $product->images->firstWhere('is_thumbnail', 1);
                         @endphp
                         @if ($thumbnail)
-                            <img src="{{ asset($thumbnail->path) }}" alt="{{ $product->name }}" class="w-full h-48 object-cover">
+                            <img src="{{ asset($thumbnail->path) }}" alt="{{ $product->name }}"
+                                class="w-full h-48 object-cover">
                         @else
-                            <img src='https://via.placeholder.com/300x200' alt="{{ $product->name }}" class="w-full h-48 object-cover">
+                            <img src='https://via.placeholder.com/300x200' alt="{{ $product->name }}"
+                                class="w-full h-48 object-cover">
                         @endif
 
                         <div class="p-4 flex flex-col flex-grow">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $product->name }}</h3>
+                            <h3
+                                class="text-lg font-semibold text-gray-900 dark:text-white h-[4rem] overflow-hidden leading-snug text-center">
+                                {{ $product->name }}
+                            </h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Rp.
                                 {{ number_format($product->price) }}</p>
 
@@ -79,7 +95,7 @@
 
             <!-- Pagination -->
             <div class="mt-8">
-                {{ $products->withQueryString()->links() }}
+                {{ $products->withQueryString()->links('pagination::tailwind') }}
             </div>
         </section>
     </div>

@@ -7,8 +7,8 @@ use App\Http\Controllers\ProfileController;
 Route::get('/', [PublicController::class, 'index'])->name('public.index');
 
 Route::get('/compare', [PublicController::class, 'compare'])->name('public.compare');
-// Route::post('/compare/{product}', [PublicController::class, 'toggleCompare'])->name('public.compare.add');
 Route::post('/compare/toggle/{id}', [PublicController::class, 'toggleCompare'])->name('public.compare.toggle');
+Route::get('/compare/clear', [PublicController::class, 'compareClear'])->name('public.clear');
 Route::get('/product/{product}', [PublicController::class, 'show'])->name('public.show');
 
 // Route::get('/dashboard', function () {
